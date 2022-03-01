@@ -7,3 +7,5 @@ WIP script / tool to work out what version of a plugin is installed on a Moodle 
 3. Run the script
 4. Inspect the output. Look for the commit hash that has the least file changes. This is probably what is installed. Usually there is always 1 file change (the missing `.git` folder).
 5. If all of them have significant file changes, there may be some modifications that have been made and has diverged from the original repository. Good luck! 😆
+
+**This is a hacky script and is a WIP - use at your own risk!**
