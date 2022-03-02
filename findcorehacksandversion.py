@@ -2,6 +2,8 @@ import subprocess
 import os
 import re
 from termcolor import cprint, colored
+import argparse
+from simple_term_menu import TerminalMenu
 
 # Extract version from version.php
 def get_versionphp_version(filedir):
@@ -29,11 +31,28 @@ def get_versionphp_version(filedir):
         # Return version
         return version
 
-# TODO in future, be able to give a CSV and iterate over it
-# Test plugin
-plugin_to_test = "mod_mediagallery"
-plugin_dir = "mod/mediagallery" # TODO generate this automatically ?
-plugin_repository = "https://github.com/open-lms-open-source/moodle-mod_mediagallery" # TODO if no repository, perhaps search via github API ?
+# Setup CLI args
+parser = argparse.ArgumentParser(description='Find core hacks and version of plugin as submodule.')
+
+parser.add_argument('--plugin', type=str, required=True,
+                    help='plugin name to test. e.g. block_turnitin')
+
+parser.add_argument('--dir', type=str, required=True,
+                    help='plugin directory to test. e.g. blocks/turnitin')
+
+parser.add_argument('--repository', type=str, required=True,
+                    help='plugin repository. e.g. https://github.com/turnitin/moodle-block_turnitin')
+
+parser.add_argument('--branch', type=str, required=True,
+                    help='plugin branch. e.g. master')
+
+args = parser.parse_args()
+
+# TODO cleaup variables.
+plugin_to_test = args.plugin
+plugin_dir = args.dir
+plugin_repository = args.repository
+branch = args.branch
 moodle_site_dir = os.path.join(os.getcwd(), 'main-repo')
 plugin_temp_dir = os.path.join(os.getcwd(), 'plugins_temp')
 max_commit_searches = 1000
@@ -43,7 +62,7 @@ test_plugin_dir = os.path.join(plugin_temp_dir, plugin_to_test)
 moodle_installed_plugin_dir = os.path.join(moodle_site_dir, plugin_dir)
 
 cprint("\nCloning {0} to {1}".format(plugin_to_test, test_plugin_dir), 'white', 'on_grey')
-subprocess.run(["git clone {0} {1}".format(plugin_repository, test_plugin_dir)],text=True, shell=True)
+subprocess.run(["git clone {0} -b {2} {1}".format(plugin_repository, test_plugin_dir, branch)],text=True, shell=True)
 subprocess.run(["cd {0} && git reset --hard origin".format(test_plugin_dir)],text=True, shell=True)
 
 # Compare version.php
@@ -100,3 +119,21 @@ for commitchange in files_changed:
     cprint("{0} - {1}".format(commitchange[0], commitchange[1]), 'cyan')
 
 cprint("\nDone", "white", "on_grey")
+
+# Menu to select hash, then move to add as a submodule
+options = matching_commit_hashes
+
+cprint("Select hash to add a submodule, or Ctrl+C to cancel", "green")
+terminal_menu = TerminalMenu(options)
+menu_entry_index = terminal_menu.show()
+
+if(menu_entry_index is None):
+    exit();
+else:
+    selected_hash = options[menu_entry_index]
+    print("Selected {0}".format(selected_hash))
+    # Generate command to add as submodule.
+    nextcmd = "python3 makesubmodulefromhash.py --plugin {0} --dir {1} --repository {2} --branch {3} --hash {4}".format(args.plugin, args.dir, args.repository, args.branch, selected_hash)
+    
+    cprint("To add hash as submodule easily, run the following:", 'green')
+    print(nextcmd)
