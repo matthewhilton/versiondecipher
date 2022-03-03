@@ -53,6 +53,7 @@ plugin_to_test = args.plugin
 plugin_dir = args.dir
 plugin_repository = args.repository
 branch = args.branch
+moodle_site_default_branch = "catalyst-main"
 moodle_site_dir = os.path.join(os.getcwd(), 'main-repo')
 plugin_temp_dir = os.path.join(os.getcwd(), 'plugins_temp')
 max_commit_searches = 1000
@@ -102,6 +103,9 @@ if(len(matching_commit_hashes) == 0):
 
 # Record the diff no for each hash
 files_changed = []
+
+cprint("\nSwitching remote site to default branch", 'cyan', 'on_grey', attrs=["bold"])
+subprocess.run(["cd {0} && git switch {1} --force".format(moodle_site_dir, moodle_site_default_branch)], stderr=subprocess.PIPE, text=True, shell=True)
 
 # Found matching versions, see the diffs of each
 for hash in matching_commit_hashes:
