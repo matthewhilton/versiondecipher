@@ -40,7 +40,7 @@ site_dir = os.path.join(os.getcwd(), site_folder)
 
 # Go into repo and checkout working branch
 cprint("\nChecking out branch", 'cyan', 'on_grey')
-subprocess.run(["cd {0} && git reset --hard origin && git checkout --force -b WR375472-move-{1}-to-submodule".format(site_dir, plugin_name)],text=True, shell=True)
+subprocess.run(["cd {0} && git reset --hard origin && git checkout --force -B WR375472-move-{1}-to-submodule".format(site_dir, plugin_name)],text=True, shell=True)
 
 # Delete the current code
 cprint("\nDeleting existing code & submodule cache", 'cyan', 'on_grey')
