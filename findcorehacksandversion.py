@@ -57,13 +57,17 @@ moodle_site_dir = os.path.join(os.getcwd(), 'main-repo')
 plugin_temp_dir = os.path.join(os.getcwd(), 'plugins_temp')
 max_commit_searches = 1000
 
+if('http' in plugin_repository):
+    cprint("\nError - use the git@ url instead of HTTPs URL.", 'red', 'on_grey', attrs=["bold"])
+    exit()
+
 # Download the plugin files
 test_plugin_dir = os.path.join(plugin_temp_dir, plugin_to_test)
 moodle_installed_plugin_dir = os.path.join(moodle_site_dir, plugin_dir)
 
 cprint("\nCloning {0} to {1}".format(plugin_to_test, test_plugin_dir), 'white', 'on_grey')
 subprocess.run(["git clone {0} -b {2} {1}".format(plugin_repository, test_plugin_dir, branch)],text=True, shell=True)
-subprocess.run(["cd {0} && git reset --hard origin".format(test_plugin_dir)],text=True, shell=True)
+subprocess.run(["cd {0} && git fetch && git reset --hard origin".format(test_plugin_dir)],text=True, shell=True)
 
 # Compare version.php
 cloned_versionphp_filedir = os.path.join(test_plugin_dir, 'version.php')
@@ -73,6 +77,10 @@ cprint("\nExamining version.php for each commit hash.", 'white', 'on_grey')
 matching_commit_hashes = []
 for i in range(max_commit_searches):
         current_git_hash = subprocess.run(["cd {0} && git rev-parse HEAD".format(test_plugin_dir)], text=True, shell=True, capture_output=True).stdout.rstrip()
+
+        # No more commits to rollback
+        if current_git_hash in matching_commit_hashes:
+            break;
 
         cloned_version = get_versionphp_version(cloned_versionphp_filedir);
         moodle_version = get_versionphp_version(moodle_versionphp_filedir);
@@ -114,7 +122,7 @@ for hash in matching_commit_hashes:
 # Print files changed summary
 cprint("\nCommit hash change summary:", "white", "on_grey")
 print("These commits have the same version.php value, but still may have different files or custom hacks.")
-print("If the only diff here is .git, it is likely the exact same code.")
+print("If the only diff here is .git, it is likely the exact same code (just missing the hidden .git file!).")
 for commitchange in files_changed:
     cprint("{0} - {1}".format(commitchange[0], commitchange[1]), 'cyan')
 
