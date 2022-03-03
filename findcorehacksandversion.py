@@ -119,7 +119,7 @@ subprocess.run(["cd {0} && git switch {1} --force".format(moodle_site_dir, moodl
 # Found matching versions, see the diffs of each
 for hash in matching_commit_hashes:
     cprint("\nComparing Moodle site plugin and Remote repository code at remote commit hash {0}".format(hash), 'cyan', 'on_grey', attrs=["bold"])
-    command = "cd {0} && git checkout {1} && diff {2} {3} | diffstat".format(test_plugin_dir, hash, moodle_installed_plugin_dir, test_plugin_dir); # Cant use git-diff here else .git directory messes it up!
+    command = "cd {0} && git checkout {1} && diff -r {2} {3} | diffstat".format(test_plugin_dir, hash, moodle_installed_plugin_dir, test_plugin_dir); # Cant use git-diff here else .git directory messes it up!
 
     gitdiff = subprocess.run([command], shell=True, capture_output=True, text=True)
     output = gitdiff.stdout.splitlines()
