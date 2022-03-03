@@ -8,28 +8,34 @@ from simple_term_menu import TerminalMenu
 # Extract version from version.php
 def get_versionphp_version(filedir):
     # Read file
-    with open(filedir) as versionfile:
-        data = versionfile.read()
-        #print(data)
+    try:
+        with open(filedir) as versionfile:
+            data = versionfile.read()
+            #print(data)
 
-        # Run regex to find line
-        pattern = re.compile(r'^.*plugin->version.*$', re.MULTILINE)
-        match = pattern.findall(data)
+            # Run regex to find line
+            pattern = re.compile(r'^.*plugin->version.*$', re.MULTILINE)
+            match = pattern.findall(data)
 
-        if(len(match) == 0):
-            # Try using $module rather than $plugin
-            pattern2 = re.compile(r'^.*module->version.*$', re.MULTILINE)
-            match = pattern2.findall(data)
-
-            # Still no match found!
             if(len(match) == 0):
-                return None
+                # Try using $module rather than $plugin
+                pattern2 = re.compile(r'^.*module->version.*$', re.MULTILINE)
+                match = pattern2.findall(data)
 
-        # Cleanup
-        version = "".join(filter(str.isdigit, match[0]))
+                # Still no match found!
+                if(len(match) == 0):
+                    return None
 
-        # Return version
-        return version
+            # Cleanup
+            version = "".join(filter(str.isdigit, match[0]))
+
+            # Return version
+            return version
+
+    # Sometimes old commit hashes have no version.php
+    except FileNotFoundError as e:
+        return None
+
 
 # Setup CLI args
 parser = argparse.ArgumentParser(description='Find core hacks and version of plugin as submodule.')
@@ -90,6 +96,9 @@ for i in range(max_commit_searches):
 
         if(versions_match):
             matching_commit_hashes.append(current_git_hash)
+        
+        if(cloned_version is None):
+            break;
 
         if(cloned_version < moodle_version):
             break;
