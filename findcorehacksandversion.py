@@ -73,6 +73,7 @@ test_plugin_dir = os.path.join(plugin_temp_dir, plugin_to_test)
 moodle_installed_plugin_dir = os.path.join(moodle_site_dir, plugin_dir)
 
 cprint("\nCloning {0} to {1}".format(plugin_to_test, test_plugin_dir), 'white', 'on_grey')
+subprocess.run(["rm -rf {0}".format(test_plugin_dir)],text=True, shell=True)
 subprocess.run(["git clone {0} -b {2} {1}".format(plugin_repository, test_plugin_dir, branch)],text=True, shell=True)
 subprocess.run(["cd {0} && git fetch && git reset --hard origin".format(test_plugin_dir)],text=True, shell=True)
 
@@ -158,3 +159,10 @@ else:
     
     cprint("To add hash as submodule easily, run the following:", 'green')
     print(nextcmd)
+
+    cprint("Run this command?", "red")
+    terminal_menu = TerminalMenu(['yes', 'no'])
+    menu_entry_index = terminal_menu.show()
+
+    if menu_entry_index == 0:
+        subprocess.run([nextcmd], shell=True, text=True)
